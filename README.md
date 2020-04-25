@@ -15,7 +15,7 @@ SERVER - npm run server
 ### Technologies used
 Node JS
 Express JS
-Socket.io
+Socket IO
 React JS
 Ant Design
 
