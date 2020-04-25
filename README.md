@@ -8,9 +8,9 @@ User can upload, list and delete the files....
 The files will be stored in server/uploadedFiles folder....
 
 ### Commands
-INSTALL - npm install
-APP - npm start
-SERVER - npm run server
+INSTALL `npm install`
+APP `npm start`
+SERVER `npm run server`
 
 ### Technologies used
 Node JS
@@ -20,7 +20,7 @@ React JS
 Ant Design
 
 ### About me
-Name is Nithish Reddy
-Working as a full stack developer
-Contact me at NITHISH25434@GMAIL.COM for any doubts
+Name is **Nithish Reddy**
+Working as a **Full Stack Developer**
+Contact me at **[NITHISH25434@GMAIL.COM]** for any doubts
 
