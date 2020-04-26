@@ -29,25 +29,47 @@ class LandingComponent extends React.Component {
 
     state = {
         files: [],
-        listOfFiles: []
+        listOfFiles: [],
+        fileStats: {}
     }
 
     componentDidMount() {
         this.getFilesFromServer();
         this.uploader.addEventListener('progress', (event) => {
             let percent = event.bytesLoaded / event.file.size * 100;
-            console.log("File is", percent.toFixed(2), "percent loaded");
+            this.updateFileUploadStats(event.file, percent);
         })
 
         this.uploader.addEventListener('complete', (e) => {
             if (e.success) {
-                this.setState({ files: [] });
-                message.success('Successfully uploaded the file');
-                this.getFilesFromServer();
+                this.handleUploadComplete(e);
             } else {
                 message.error('Failed to upload file');
             }
         })
+    }
+
+    handleUploadComplete = (e) => {
+        let files = [];
+        this.state.files.filter(file => {
+            if (file.uid !== e.file.uid)
+                files.push(file);
+
+            return false;
+        });
+        this.setState({ files: files });
+        if (files.length === 0) {
+            this.setState({ fileStats: [] });
+            message.success('Successfully uploaded the file');
+            this.getFilesFromServer();
+        }
+    }
+
+    updateFileUploadStats = (file, percent) => {
+        let fileStats = this.state.fileStats;
+        fileStats[file.uid].percent = percent.toFixed(2);
+
+        this.setState({ fileStats: fileStats });
     }
 
     getFilesFromServer = () => {
@@ -82,6 +104,22 @@ class LandingComponent extends React.Component {
             .catch(e => console.log(e));
     }
 
+    uploadChangeHandler = (e) => {
+        let fileStats = {};
+        let fileList = [];
+
+        e.fileList.map(file => {
+            fileStats[file.uid] = {
+                'percent': 0,
+                'name': file.name
+            }
+            fileList.push(file);
+            return false;
+        })
+
+        this.setState({ fileStats: fileStats });
+    }
+
     listFiles = () => {
         const { listOfFiles } = this.state;
 
@@ -90,7 +128,7 @@ class LandingComponent extends React.Component {
         } else {
             return listOfFiles.map((file, i) => {
                 return (
-                    <div style={{
+                    <div key={i} style={{
                         'marginBottom': '20px'
                     }}>
                         <span>{i + 1}. {file}</span>
@@ -106,6 +144,30 @@ class LandingComponent extends React.Component {
                 )
             })
         }
+    }
+
+    getUploadPercent = () => {
+        const { fileStats } = this.state;
+        let keys = Object.keys(fileStats);
+
+        return (
+            <div style={{
+                'backgroundColor': 'lightgrey',
+                'borderRadius': '4px',
+                'padding': '4px'
+            }}>
+                {keys.map((uid, i) => {
+                    if (fileStats[uid].percent > 0)
+                        return (
+                            <div key={i}>
+                                {fileStats[uid].name} = {fileStats[uid].percent} %
+                            </div>
+                        )
+                    else
+                        return false;
+                })}
+            </div>
+        )
     }
 
     render() {
@@ -129,12 +191,15 @@ class LandingComponent extends React.Component {
                         <Dragger
                             beforeUpload={this.collectFiles}
                             fileList={this.state.files}
+                            onChange={this.uploadChangeHandler}
                         >
                             <p className="ant-upload-drag-icon">
                                 <InboxOutlined />
                             </p>
                             <p className="ant-upload-text">Click or drag file to this area to upload</p>
                         </Dragger>
+                        <br />
+                        {this.getUploadPercent()}
                         <br />
                         <Button onClick={() => this.uploadFiles()}>Upload</Button>
                     </Col>
